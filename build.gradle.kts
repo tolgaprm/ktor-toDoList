@@ -28,4 +28,9 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+
+    // database
+    implementation("mysql:mysql-connector-java:8.0.28")
+    implementation("org.ktorm:ktorm-core:3.4.1")
+    implementation("org.ktorm:ktorm-support-mysql:3.4.1")
 }

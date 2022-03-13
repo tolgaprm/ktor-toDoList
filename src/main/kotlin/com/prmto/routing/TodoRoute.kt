@@ -1,6 +1,7 @@
 package com.prmto.routing
 
 import com.prmto.entities.ToDoDraft
+import com.prmto.repository.MySQLTodoRepository
 import com.prmto.repository.ToDoRepository
 import com.prmto.repository.ToDoRepositoryImpl
 import io.ktor.application.*
@@ -19,7 +20,7 @@ fun Application.configureRoutingToDoList() {
 
 fun Route.configureTodoList() {
 
-    val repository: ToDoRepository = ToDoRepositoryImpl()
+    val repository: ToDoRepository = MySQLTodoRepository()
 
     route("/") {
         get {
