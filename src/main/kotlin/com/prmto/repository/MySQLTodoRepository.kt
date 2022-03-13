@@ -13,18 +13,20 @@ class MySQLTodoRepository : ToDoRepository {
     }
 
     override fun getToDo(id: Int): ToDo? {
-        TODO("Not yet implemented")
+        return database.getToDo(id)?.let {
+            ToDo(it.id, it.title, it.done)
+        }
     }
 
     override fun addTodo(draft: ToDoDraft): ToDo {
-        TODO("Not yet implemented")
+        return database.addToDo(draft)
     }
 
     override fun removeTodo(id: Int): Boolean {
-        TODO("Not yet implemented")
+        return database.removeTodo(id)
     }
 
     override fun updateToDo(id: Int, draft: ToDoDraft): Boolean {
-        TODO("Not yet implemented")
+        return database.updateTodo(id, draft)
     }
 }
