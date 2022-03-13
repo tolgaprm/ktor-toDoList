@@ -1,11 +1,15 @@
 package com.prmto.routing
 
-import com.prmto.entities.ToDo
+import com.prmto.entities.ToDoDraft
+import com.prmto.repository.ToDoRepository
+import com.prmto.repository.ToDoRepositoryImpl
 import io.ktor.application.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.http.HttpStatusCode.Companion as HttpStatusCode
 
-fun Application.registerRoute() {
+fun Application.configureRoutingToDoList() {
 
     routing {
         configureTodoList()
@@ -15,40 +19,89 @@ fun Application.registerRoute() {
 
 fun Route.configureTodoList() {
 
+    val repository: ToDoRepository = ToDoRepositoryImpl()
+
     route("/") {
-
-        val todoList = listOf(
-            ToDo(1, "Plan Content for video #2", true),
-            ToDo(2, "Record Video #2", false),
-            ToDo(3, "Upload video #2", false),
-
-            )
-
         get {
             call.respondText("Hello Todo List")
         }
 
         get("todos") {
-            call.respond(todoList)
-
+            val todoList = repository.getAllToDos()
+            if (todoList.isNotEmpty()) {
+                call.respond(todoList)
+            } else {
+                call.respondText("Not Found ToDo List", status = HttpStatusCode.NotFound)
+            }
         }
 
         get("todos/{id}") {
-            val id = call.parameters["id"]
+            val id = call.parameters["id"]?.toIntOrNull()
 
-            call.respondText("TodoList Details for ToDo Item #$id")
+
+            if (id == null) {
+                call.respondText("Missing format", status = HttpStatusCode.BadRequest)
+            } else {
+
+
+                val todo = repository.getToDo(id.toInt())
+
+                if (todo == null) {
+                    call.respondText("No todo with id #$id", status = HttpStatusCode.NotFound)
+                } else {
+                    call.respond(todo)
+                }
+
+            }
+
+
         }
 
         post("todos") {
+            val todoDraft = call.receive<ToDoDraft>()
+
+            val todo = repository.addTodo(todoDraft)
+
+            call.respond(todo)
 
         }
 
         put("todos/{id}") {
 
+            val todoId = call.parameters["id"]?.toIntOrNull()
+            val todoDraft = call.receive<ToDoDraft>()
+
+            if (todoId == null) {
+                call.respondText("is parameter has to be a number", status = HttpStatusCode.BadRequest)
+                return@put
+            }
+
+            val updated = repository.updateToDo(todoId, todoDraft)
+
+            if (updated) {
+                call.respond(HttpStatusCode.OK)
+            } else {
+                call.respond(HttpStatusCode.NotFound, "Found no todo with id #$todoId")
+            }
 
         }
 
         delete("todos/{id}") {
+            val todoId = call.parameters["id"]?.toIntOrNull()
+
+            if (todoId == null) {
+                call.respondText("is parameter has to be a number", status = HttpStatusCode.BadRequest)
+                return@delete
+            }
+
+            val isDeleted = repository.removeTodo(todoId)
+
+            if (isDeleted) {
+                call.respond(HttpStatusCode.OK)
+            } else {
+                call.respond(HttpStatusCode.NotFound, "Found no todo with id #$todoId")
+            }
+
 
         }
     }
